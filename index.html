@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>9PICS, from @rheza</title>
+    <title>9PICS</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -33,24 +33,202 @@
 	<script src="./js/json2.js"></script>
 	<script src="./js/URI.js"></script>
 	<script src="./js/jquery.timeago.js""></script>
-	<script src="./js/9pics.js""></script>
-	<script src="./js/backtotopscroll.js""></script>
-	<script type="text/javascript">
+	
 
-  	var _gaq = _gaq || [];
-  	_gaq.push(['_setAccount', 'UA-2484933-13']);
-  	_gaq.push(['_trackPageview']);
 
-  	(function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  	})();
 
-	</script>
+  	<script type="text/javascript" charset="utf-8">
+	
 
+    $(document).ready(function() {
+ 
+ 	 // Enable caching
+  	//$.ajaxSetup({ cache: true });
+ 
+  	// Send JSON request
+  	// The returned JSON object will have a property called "results" where we find
+  	// a list of the tweets matching our request query
   	
   	
+  	
+  	function timeConverter(UNIX_timestamp){
+ 	var a = new Date(UNIX_timestamp*1000);
+ 	var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+     var year = a.getFullYear();
+     var month = months[a.getMonth()];
+     var date = a.getDate();
+     var hour = a.getHours();
+     var min = a.getMinutes();
+     var sec = a.getSeconds();
+     var time = date+','+month+' '+year+' '+hour+':'+min+':'+sec ;
+     return time;
+ 	}
+  	
+  	//manipulate url
+  	
+  	
+  	
+  	var reddit_url = 'http://api.reddit.com/r/pics.json?jsonp=?';
+  	
+  	var uri = new URI(document.URL),
+    synthax  = uri.query(true);
+  	
+  	 var lastid;
+     var mode;
+    if(synthax.after != null)
+    {
+  	 reddit_url = 'http://api.reddit.com/r/pics.json?jsonp=?&count=25&after='+synthax.after;
+  	}
+  	
+  	if(synthax.mode == "new")
+  	{
+  		 reddit_url = 'http://api.reddit.com/r/pics/new.json?jsonp=?&sort=new';
+  		 if(synthax.after != null)
+    		{
+  		 reddit_url = 'http://api.reddit.com/r/pics/new.json?jsonp=?&sort=new&count=25&after='+synthax.after;
+  			}
+  		mode = synthax.mode;
+      		  var nav_active = '<div class="nav-collapse"><ul class="nav">';
+      		  nav_active    += '<li class=""><a href="index.html?mode=normal">What\'s hot</a></li>';
+              nav_active    += '<li class="active"><a href="index.html?mode=new">new</a></li>';
+              nav_active    += '<li class=""><a href="index.html?mode=controversial">controversial</a></li>';       
+              nav_active    += '<li class=""><a href="index.html?mode=top">top</a></li>';
+              nav_active    += '</ul></div></div>';
+      		$('#nav_active').append(nav_active);	  
+  	}else if (synthax.mode ==  "controversial") {
+  		reddit_url = 'http://api.reddit.com/r/pics/controversial.json?jsonp=?';
+  		if(synthax.after != null)
+    		{
+  		 reddit_url = 'http://api.reddit.com/r/pics/controversial.json?jsonp=?&count=25&after='+synthax.after;
+  			}
+  		mode = synthax.mode;
+  		var nav_active = '<div class="nav-collapse"><ul class="nav">';
+      		  nav_active    += '<li class=""><a href="index.html?mode=normal">What\'s hot</a></li>';
+              nav_active    += '<li class=""><a href="index.html?mode=new">new</a></li>';
+              nav_active    += '<li class="active"><a href="index.html?mode=controversial">controversial</a></li>';       
+              nav_active    += '<li class=""><a href="index.html?mode=top">top</a></li>';
+              nav_active    += '</ul></div></div>';
+      		$('#nav_active').append(nav_active);
+	}else if (synthax.mode ==  "top") {
+  		reddit_url = 'http://api.reddit.com/r/pics/top.json?jsonp=?&sort=top&t=week';
+  		if(synthax.after != null)
+    		{
+  		 reddit_url = 'http://api.reddit.com/r/pics/top.json?jsonp=?&sort=top&t=week&count=25&after='+synthax.after;
+  			}
+  		mode = synthax.mode;
+  		var nav_active = '<div class="nav-collapse"><ul class="nav">';
+      		  nav_active    += '<li class=""><a href="index.html?mode=normal">What\'s hot</a></li>';
+              nav_active    += '<li class=""><a href="index.html?mode=new">new</a></li>';
+              nav_active    += '<li class=""><a href="index.html?mode=controversial">controversial</a></li>';       
+              nav_active    += '<li class="active"><a href="index.html?mode=top">top</a></li>';
+              nav_active    += '</ul></div></div>';
+      		$('#nav_active').append(nav_active);
+	}else if (synthax.mode ==  "normal") {
+  		reddit_url = 'http://api.reddit.com/r/pics.json?jsonp=?';
+  		if(synthax.after != null)
+    		{
+  		 reddit_url = 'http://api.reddit.com/r/pics.json?jsonp=?&count=25&after='+synthax.after;
+  			}
+  		mode = "normal";
+  		var nav_active = '<div class="nav-collapse"><ul class="nav">';
+      		  nav_active    += '<li class="active"><a href="index.html?mode=normal">What\'s hot</a></li>';
+              nav_active    += '<li class=""><a href="index.html?mode=new">new</a></li>';
+              nav_active    += '<li class=""><a href="index.html?mode=controversial">controversial</a></li>';       
+              nav_active    += '<li class=""><a href="index.html?mode=top">top</a></li>';
+              nav_active    += '</ul></div></div>';
+      		$('#nav_active').append(nav_active);
+	}else {
+  		reddit_url = 'http://api.reddit.com/r/pics.json?jsonp=?';
+  		
+  		if(synthax.after != null)
+    		{
+  		 reddit_url = 'http://api.reddit.com/r/pics.json?jsonp=?&count=25&after='+synthax.after;
+  			}
+  		mode = "normal";
+  		var nav_active = '<div class="nav-collapse"><ul class="nav">';
+      		  nav_active    += '<li class="active"><a href="index.html?mode=normal">What\'s hot</a></li>';
+              nav_active    += '<li class=""><a href="index.html?mode=new">new</a></li>';
+              nav_active    += '<li class=""><a href="index.html?mode=controversial">controversial</a></li>';       
+              nav_active    += '<li class=""><a href="index.html?mode=top">top</a></li>';
+              nav_active    += '</ul></div></div>';
+      		$('#nav_active').append(nav_active);
+	}
+  	
+  	
+
+
+    
+  	$.getJSON(reddit_url,{
+    format: "json",
+    timeout: 500
+  	},function(data) {
+  	
+      $.each(data.data.children, function(i, obj){
+      		 var url = obj.data.url;
+      		 var reddit_html = url;
+      		 var imgurl
+      		 lastid = obj.data.name;
+      		 
+      		 var uri = new URI(obj.data.url);
+			 // get domain
+			 uri.domain();
+      		 
+      		 if(uri.domain() == "imgur.com" && obj.data.url.length == 22)
+      		 {
+      		 imgurl = obj.data.url + ".png";
+      		 }
+      		 else
+      		 {
+      		 imgurl = obj.data.url;
+      		 }
+      		 
+      		 var imgbox;
+      		 console.log(obj.data.over_18);
+      		 var nsfw = obj.data.over_18;
+      		 
+      		 if(nsfw == true)
+      		 	{
+      		 		imgbox = '<center><br/><br/><a href="'+obj.data.url+'"><img src="img/unsafe.jpeg" alt="'+ obj.data.title+'"></a></center>';
+      		 		
+      			 }
+      		 else
+      		 	{
+      		 		imgbox = '<a href="'+obj.data.url+'"><img src="'+imgurl+'" alt="'+ obj.data.title+'"></a>';
+      		 	}
+      		 
+      		  var reddit_imagediv = '<div class="row"><div class="span9"><div class="thumbnail"><div class="row show-grid">';
+         	  	  reddit_imagediv    += '<div class="span6">' + imgbox;
+          	      reddit_imagediv    += '<div id="reddit_container"></div></div><div class="span2"><div class="caption">';
+          	      reddit_imagediv    += '<p><h2>'+ obj.data.title+'</h2></p>';
+          	      reddit_imagediv    += '<p><h6> submitted '+ jQuery.timeago(timeConverter(obj.data.created_utc)) +'</h6></p>';
+          	      reddit_imagediv    += '<p><h5>by <a href="http://www.reddit.com/user/'+ obj.data.author +'" target="_blank">'+obj.data.author+'</a></h5></p>';
+          	      reddit_imagediv    += '<p><a href="http://reddit.com'+obj.data.permalink+'" target="_blank" class="btn btn"><i class="icon-comment"></i> '+obj.data.num_comments+' comments</a>';
+          	      reddit_imagediv    += '<p><span class="label big label-success">'+obj.data.score+'</span></p>';
+          	     // reddit_imagediv    += '<script type=\"text/javascript\" src=\"http://www.reddit.com/static/button/button1.js\">reddit_url=' + 'http://reddit.com' +obj.data.permalink +'<\/script>';
+          	      reddit_imagediv    += '';
+          	      reddit_imagediv    += ' </div>';
+      			  reddit_imagediv    += ' </div>';
+      			  reddit_imagediv    += ' </div>';
+      			  reddit_imagediv    += ' </div><br />';
+      			  reddit_imagediv    += ' </div>';
+      			
+      			
+          // Append html string to tweet_container div
+          $('#reddit_container').append(reddit_imagediv);
+    	
+    
+    
+		});
+		
+		
+		var reddit_nextdiv = '<p><a href="index.html?after='+ lastid+'&mode='+mode +'" class="btn btn-primary btn-large">Next</a></p>';
+		$('#button_next_container').append(reddit_nextdiv);
+		
+    }
+  );
+});     
+</script>
+
 
 <style>
 #toTop {
@@ -63,8 +241,44 @@
         
 }
 </style>
-
-
+<script>
+$(function() {
+	$(window).scroll(function() {
+		if($(this).scrollTop() != 0) {
+			$('#toTop').fadeIn();	
+		} else {
+			$('#toTop').fadeOut();
+		}
+	});
+ 
+	$('#toTop').click(function() {
+		$('body,html').animate({scrollTop:0},800);
+	});	
+});
+</script>
+<script type="text/javascript">
+   $(document).ready(function() {
+        var offset = $("#sidebar").offset();
+        documentHeight = $(document).height();
+        $(window).scroll(function() {
+            var sideBarHeight = $("#sidebar").height();
+            if ($(window).scrollTop() > offset.top) {
+                var newPosition = ($(window).scrollTop() - offset.top) + topPadding;
+                var maxPosition = documentHeight - (sideBarHeight + 100);
+                if (newPosition > maxPosition) {
+                    newPosition = maxPosition;
+                }
+                $("#sidebar").stop().animate({
+                    marginTop: newPosition
+                });
+            } else {
+                $("#sidebar").stop().animate({
+                    marginTop: 0
+                });
+            };
+        });
+    });
+</script>
   </head>
 
   <body>
@@ -72,20 +286,13 @@
     <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
-        <a class="brand" href="#">9PICS</a>
-          <!--<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          
-          <div class="nav-collapse">
-            <ul class="nav">
-            <li class="active">
-                <a href="./index.html">What's hot</a>
-              </li>
-            </ul>
-          </div> -->
+          <a class="brand" href="#">9PICS</a>
+          <div id="nav_active"></div> 
         </div>
       </div>
     </div>
